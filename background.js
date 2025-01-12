@@ -64,7 +64,7 @@ function handleTabUpdate(tabId, selectors, index, today) {
 }
 
 function handleScrapeResponse(response, selectors, index, today, tabId) {
-  if (response && response.data) {
+  if (response?.data) {
     console.log(`Scraped data from ${selectors.url}:`, response.data);
     savePrice(index, selectors, response.data);
 
