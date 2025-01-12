@@ -16,8 +16,6 @@ async function checkAlarmState() {
 
 checkAlarmState();
 
-
-
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "dailyScrape") {
     scrapeData();
@@ -42,39 +40,50 @@ function scrapeData() {
 
       // Open tab in the background
       chrome.tabs.create({ url: selectors.url, active: false }, (tab) => {
-        chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
-          if (tabId === tab.id && changeInfo.status === "complete") {
-            console.log(`Tab loaded: ${selectors.url}`);
-            chrome.scripting.executeScript({
-              target: { tabId: tab.id },
-              files: ['content.js']
-            }, () => {
-              chrome.tabs.sendMessage(tab.id, { action: "scrape", config: selectors }, (response) => {
-                if (response && response.data) {
-                  console.log(`Scraped data from ${selectors.url}:`, response.data);
-                  savePrice(index, selectors, response.data);
-
-                  // Save the scrape date
-                  trackers[index].scrapeData.lastScraped = today;
-
-                  // Save the updated trackers array back to storage
-                  chrome.storage.local.set({ trackers }, () => {
-                    console.log(`Updated lastScraped for ${selectors.url}`);
-                  });
-
-                  // Close the tab
-                  chrome.tabs.remove(tab.id);
-                } else {
-                  console.error("No response data received");
-                }
-              });
-            });
-            chrome.tabs.onUpdated.removeListener(listener);
-          }
-        });
+        handleTabUpdate(tab.id, selectors, index, today);
       });
     });
   });
+}
+
+function handleTabUpdate(tabId, selectors, index, today) {
+  chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, changeInfo) {
+    if (tabIdUpdated === tabId && changeInfo.status === "complete") {
+      console.log(`Tab loaded: ${selectors.url}`);
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content.js']
+      }, () => {
+        chrome.tabs.sendMessage(tabId, { action: "scrape", config: selectors }, (response) => {
+          handleScrapeResponse(response, selectors, index, today, tabId);
+        });
+      });
+      chrome.tabs.onUpdated.removeListener(listener);
+    }
+  });
+}
+
+function handleScrapeResponse(response, selectors, index, today, tabId) {
+  if (response && response.data) {
+    console.log(`Scraped data from ${selectors.url}:`, response.data);
+    savePrice(index, selectors, response.data);
+
+    // Save the scrape date
+    chrome.storage.local.get({ trackers: [] }, (result) => {
+      const trackers = result.trackers;
+      trackers[index].scrapeData.lastScraped = today;
+
+      // Save the updated trackers array back to storage
+      chrome.storage.local.set({ trackers }, () => {
+        console.log(`Updated lastScraped for ${selectors.url}`);
+      });
+
+      // Close the tab
+      chrome.tabs.remove(tabId);
+    });
+  } else {
+    console.error("No response data received");
+  }
 }
 
 // Save price to storage
