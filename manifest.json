@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Daily Price Scraper",
+  "version": "1.0",
+  "description": "Scrapes price data once a day in the background.",
+  "permissions": ["tabs", "storage", "alarms", "notifications", "scripting"],
+  "host_permissions": ["https://*/*"], 
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16x16.png",
+    "32": "icon32x32.png",
+    "48": "icon48x48.png",
+    "128": "icon128x128.png",
+    "256": "icon256x256.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16x16.png",
+      "32": "icon32x32.png",
+      "48": "icon48x48.png",
+      "128": "icon128x128.png",
+      "256": "icon256x256.png"
+    },
+      "default_title": "Daily Price Scraper"
+  }
+
+}
