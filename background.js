@@ -18,28 +18,26 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-function scrapeData(force = false) {
-  console.log("Scraping data");
-  chrome.storage.local.get({ trackers: [] }, (result) => {
-    const trackers = result.trackers;
-    const today = new Date().toISOString().split("T")[0];
+async function scrapeData(force = false) {
+  const trackers = await getFromStorage('trackers');
+  console.log("trackers: ", trackers);
+  const today = new Date().toISOString().split("T")[0];
 
-    trackers.forEach(async (tracker) => {
-      if (!force) {
-        console.log(`Scraping ${tracker.url}`);
-        const lastData = await getFromStorage(tracker.url);
-        const lastScraped = lastData?.lastScraped || "never";
-        console.log(`Last scraped: ${lastScraped}`);
-        if (lastScraped === today) {
-          console.log(`Already scraped ${tracker.url} today.`);
-          return;
-        }
+  trackers.forEach(async (tracker) => {
+    if (!force) {
+      console.log(`Scraping ${tracker.url}`);
+      const lastData = await getFromStorage(tracker.url);
+      const lastScraped = lastData?.lastScraped || "never";
+      console.log(`Last scraped: ${lastScraped}`);
+      if (lastScraped === today) {
+        console.log(`Already scraped ${tracker.url} today.`);
+        return;
       }
+    }
 
-      // Open tab in the background
-      chrome.tabs.create({ url: tracker.url, active: false }, (tab) => {
-        handleTabUpdate(tab.id, tracker);
-      });
+    // Open tab in the background
+    chrome.tabs.create({ url: tracker.url, active: false }, (tab) => {
+      handleTabUpdate(tab.id, tracker);
     });
   });
 }
@@ -47,7 +45,6 @@ function scrapeData(force = false) {
 function handleTabUpdate(tabId, tracker) {
   chrome.tabs.onUpdated.addListener(function listener(tabIdUpdated, changeInfo) {
     if (tabIdUpdated === tabId && changeInfo.status === "complete") {
-      console.log(`Tab loaded: ${tracker.url}`);
       chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: ['content.js']
@@ -70,18 +67,16 @@ function handleTabUpdate(tabId, tracker) {
 }
 
 // Save price to storage
-function saveData(tracker, data) {
-  chrome.storage.local.get(tracker.url, (result) => {
-    const oldData = result[tracker.url] || {};
-    
-    const oldPrice = oldData.price;
+async function saveData(tracker, data) {
+  const oldData = await getFromStorage(tracker.url);
+    const oldPrice = oldData?.price;
     if (oldPrice && oldPrice !== data.price) {
       console.log(`Price changed for ${tracker.url}: ${oldPrice} -> ${data.price}`);
       sendNotification("Price Change Detected", `${data.name} price changed from ${oldPrice} to ${data.price}`, tracker.url);
       oldData.oldPrice = oldPrice; // Update oldPrice only when there is a difference
     }
 
-    const oldPromotion = oldData.promotion;
+    const oldPromotion = oldData?.promotion;
     if (data.promotion && oldPromotion !== data.promotion) {
       console.log(`Promotion changed for ${tracker.url}: ${oldPromotion} -> ${data.promotion}`);
       sendNotification("Promotion Detected", `${data.name} promotion found: ${data.promotion}`, tracker.url);
@@ -92,8 +87,9 @@ function saveData(tracker, data) {
     newData.url = tracker.url;
 
     // Save the data to storage
-    setToStorage(tracker.url, newData);
-  });
+    //TODO: Change tracker.url to an ID to allow multiple trackers for the same URL
+    await setToStorage(tracker.url, newData);
+    chrome.runtime.sendMessage({ action: 'scrapeComplete' });
 }
 
 async function sendNotification(title, message, url) {
@@ -133,11 +129,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       // Add the new selector to the trackers array
       trackers.push({
-          url: newSelector.url,
-          name: newSelector.name,
-          price: newSelector.price,
-          decimal: newSelector.decimal,
-          promotion: newSelector.promotion
+        url: newSelector.url,
+        name: newSelector.name,
+        price: newSelector.price,
+        decimal: newSelector.decimal,
+        promotion: newSelector.promotion
       });
 
       // Save the updated trackers back to storage and re-scrape
