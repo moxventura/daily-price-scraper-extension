@@ -138,15 +138,6 @@ async function sendNotification(title, message, url) {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'GET_URL') {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-      sendResponse({ url: tabs[0].url });
-    });
-    return true; // Keep the message channel open for sendResponse
-  }
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'saveSelectors') {
     const newSelector = message.data;
     chrome.storage.local.get({ trackers: [] }, (result) => {
