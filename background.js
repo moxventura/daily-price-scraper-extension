@@ -28,7 +28,7 @@ function scrapeData(force = false) {
       if (!force) {
         console.log(`Scraping ${tracker.url}`);
         const lastData = await getFromStorage(tracker.url);
-        const lastScraped = lastData.lastScraped || "never";
+        const lastScraped = lastData?.lastScraped || "never";
         console.log(`Last scraped: ${lastScraped}`);
         if (lastScraped === today) {
           console.log(`Already scraped ${tracker.url} today.`);
