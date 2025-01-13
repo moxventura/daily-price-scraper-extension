@@ -1,16 +1,10 @@
-const STORAGE_KEY = "user-preference-alarm-enabled";
-
 async function checkAlarmState() {
-  const { alarmEnabled } = await chrome.storage.local.get(STORAGE_KEY);
+  const alarm = await chrome.alarms.get("dailyScrape");
 
-  if (alarmEnabled) {
-    const alarm = await chrome.alarms.get("dailyScrape");
-
-    if (!alarm) {
-      scrapeData();
-      // Run daily scrape using Chrome alarms
-      await chrome.alarms.create("dailyScrape", { periodInMinutes: 1440 });
-    }
+  if (!alarm) {
+    scrapeData();
+    // Run daily scrape using Chrome alarms
+    await chrome.alarms.create("dailyScrape", { periodInMinutes: 1440 });
   }
 }
 
