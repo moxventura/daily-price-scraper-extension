@@ -1,3 +1,5 @@
+import { getFromStorage } from './storageUtils.js';
+
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("priceTableBody");
 
@@ -5,17 +7,16 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.storage.local.get(["trackers"], (data) => {
     const trackers = data.trackers || [];
 
-    trackers.forEach((tracker, index) => {
-      const { scrapeData, selectors } = tracker;
+    trackers.forEach(async (tracker, index) => {
       const row = document.createElement("tr");
 
-      const faviconUrl = new URL(selectors.url).origin + '/favicon.ico';
+      const faviconUrl = new URL(tracker.url).origin + '/favicon.ico';
 
-
+      const scrapeData = await getFromStorage(tracker.url);
       row.innerHTML = `
         <td class="name-column">
           <img src="${faviconUrl}" class="favicon" alt="Favicon">
-          <span>${scrapeData.name || selectors.url}</span>
+          <span>${scrapeData.name || tracker.url}</span>
         </td>
         <td>${scrapeData.oldPrice || "N/A"}</td>
         <td>${scrapeData.price || ""}</td>
@@ -61,6 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
         window.close();
       });
     });
+  });
+
+  document.getElementById('forceScrape').addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: 'forceScrape' });
   });
 
   function removeSelector(index) {
