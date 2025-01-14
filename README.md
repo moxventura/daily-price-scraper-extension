@@ -4,7 +4,8 @@ This is a chrome extention that will allow to to visit a website and select pric
 
 # Credits
 
-[CSS selector Generator](https://cdn.jsdelivr.net/npm/css-selector-generator)
+[CSS selector Generator](https://www.npmjs.com/package/css-selector-generator)
+[Source](https://cdn.jsdelivr.net/npm/css-selector-generator)
 Icon by wanicon
 
 ## License

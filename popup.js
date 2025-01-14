@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fetch and display price data
   function updateTable() {
     chrome.storage.local.get(["trackers"], async (data) => {
-      const categories = [...new Set(trackers.map(item => item.category))];
       const trackers = data.trackers || [];
 
       for (const [index, tracker] of trackers.entries()) {
