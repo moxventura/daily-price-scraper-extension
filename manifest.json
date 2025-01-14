@@ -3,8 +3,16 @@
   "name": "Daily Price Scraper",
   "version": "1.0",
   "description": "Scrapes price data once a day in the background.",
-  "permissions": ["tabs", "storage", "alarms", "notifications", "scripting"],
-  "host_permissions": ["https://*/*"], 
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms",
+    "notifications",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -25,7 +33,7 @@
       "128": "icon128x128.png",
       "256": "icon256x256.png"
     },
-      "default_title": "Daily Price Scraper"
-  }
-
+    "default_title": "Daily Price Scraper"
+  },
+  "options_page": "options.html"
 }
