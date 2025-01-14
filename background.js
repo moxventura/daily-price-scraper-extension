@@ -26,7 +26,7 @@ async function scrapeData(force = false) {
   trackers.forEach(async (tracker) => {
     if (!force) {
       console.log(`Scraping ${tracker.url}`);
-      const lastData = await getFromStorage(tracker.url);
+      const lastData = await getFromStorage(tracker.id);
       const lastScraped = lastData?.lastScraped || "never";
       console.log(`Last scraped: ${lastScraped}`);
       if (lastScraped === today) {
@@ -68,7 +68,7 @@ function handleTabUpdate(tabId, tracker) {
 
 // Save price to storage
 async function saveData(tracker, data) {
-  const oldData = await getFromStorage(tracker.url);
+  const oldData = await getFromStorage(tracker.id);
     const oldPrice = oldData?.price;
     if (oldPrice && oldPrice !== data.price) {
       console.log(`Price changed for ${tracker.url}: ${oldPrice} -> ${data.price}`);
@@ -87,8 +87,7 @@ async function saveData(tracker, data) {
     newData.url = tracker.url;
 
     // Save the data to storage
-    //TODO: Change tracker.url to an ID to allow multiple trackers for the same URL
-    await setToStorage(tracker.url, newData);
+    await setToStorage(tracker.id, newData);
     chrome.runtime.sendMessage({ action: 'scrapeComplete' });
 }
 
@@ -114,6 +113,15 @@ async function sendNotification(title, message, url) {
   });
 }
 
+//djb2 hash function
+function generateHash(str) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return hash >>> 0;
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'forceScrape') {
     scrapeData(true);
@@ -126,9 +134,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (!Array.isArray(trackers)) {
         trackers = [];
       }
-
+      const uniqueString = `${newSelector.url}${newSelector.name}${newSelector.price}${newSelector.decimal}${newSelector.promotion}`;
+      const trackerId = generateHash(uniqueString);
       // Add the new selector to the trackers array
       trackers.push({
+        id: `tracker-${trackerId}`,
         url: newSelector.url,
         name: newSelector.name,
         price: newSelector.price,

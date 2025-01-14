@@ -9,13 +9,15 @@ const schema = {
   items: {
     type: "object",
     properties: {
+      id: { type: "string" },
       url: { type: "string" },
       name: { type: "string" },
       price: { type: "string" },
       decimal: { type: "string" },
       promotion: { type: "string" },
+      category: { type: "string" },
     },
-    required: ["url"],
+    required: ["id", "url"],
     additionalProperties: false,
   },
 };

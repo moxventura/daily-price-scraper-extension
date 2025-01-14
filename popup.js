@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fetch and display price data
   function updateTable() {
     chrome.storage.local.get(["trackers"], async (data) => {
+      //const categories = [...new Set(trackers.map(item => item.category))];
       const trackers = data.trackers || [];
 
       for (const [index, tracker] of trackers.entries()) {
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const faviconUrl = new URL(tracker.url).origin + '/favicon.ico';
 
-        const scrapeData = await getFromStorage(tracker.url);
+        const scrapeData = await getFromStorage(tracker.id);
         row.innerHTML = `
           <td class="name-column">
             <img src="${faviconUrl}" class="favicon" alt="Favicon">
@@ -64,15 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
-
-  document.getElementById("hamburgerButton").addEventListener("click", () => {
-    var menu = document.getElementById("menu");
-    if (menu.style.display === "block") {
-      menu.style.display = "none";
-    } else {
-      menu.style.display = "block";
-    }
-  });
 });
 
 // Function to add event listeners to bin icons
@@ -90,11 +82,11 @@ function removeSelector(index) {
   chrome.storage.local.get({ trackers: [] }, (result) => {
     let trackers = result.trackers;
     if (Array.isArray(trackers)) {
-      trackers.splice(index, 1); // Remove the selector at the specified index
+      let tracker = trackers.splice(index, 1); // Remove the selector at the specified index
+      chrome.storage.local.remove(tracker[0].id); // Remove the data associated with the selector
       chrome.storage.local.set({ trackers }, () => {
         location.reload(); // Reload the table
       });
     }
-    //TODO: Remove the scrapeData from storage
   });
 }
