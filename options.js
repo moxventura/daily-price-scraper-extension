@@ -24,31 +24,10 @@ const schema = {
 
 // Validate JSON against schema
 function validateJson(data, schema) {
-  if (schema.type === "array" && !Array.isArray(data)) {
-    return { valid: false, error: "Root element must be an array." };
-  }
-
-  for (const item of data) {
-    for (const key of schema.items.required) {
-      if (!Object.prototype.hasOwnProperty.call(item, key)) {
-        return { valid: false, error: `Missing required field: ${key}` };
-      }
-    }
-    for (const [key, value] of Object.entries(item)) {
-      const propertySchema = schema.items.properties[key];
-      if (!propertySchema) {
-        return { valid: false, error: `Unexpected property: ${key}` };
-      }
-      if (typeof value !== propertySchema.type) {
-        return {
-          valid: false,
-          error: `Invalid type for property '${key}'. Expected ${propertySchema.type}.`,
-        };
-      }
-    }
-  }
-
-  return { valid: true };
+  const ajv = new Ajv();
+  const validate = ajv.compile(schema);
+  const valid = validate(data);
+  return valid ? { valid: true } : { valid: false, error: ajv.errorsText(validate.errors) };
 }
 
 // Handle Import
