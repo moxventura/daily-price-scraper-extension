@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("adding row for tracker: ", tracker.url);
         let row = tableBody.querySelector(`tr:nth-child(${index + 1})`);
         if (!row) {
-            row = document.createElement("tr");
-            tableBody.appendChild(row);
+          row = document.createElement("tr");
+          tableBody.appendChild(row);
         }
 
         const faviconUrl = new URL(tracker.url).origin + '/favicon.ico';
@@ -63,6 +63,15 @@ document.addEventListener("DOMContentLoaded", () => {
         window.close();
       });
     });
+  });
+
+  document.getElementById("hamburgerButton").addEventListener("click", () => {
+    var menu = document.getElementById("menu");
+    if (menu.style.display === "block") {
+      menu.style.display = "none";
+    } else {
+      menu.style.display = "block";
+    }
   });
 });
 
