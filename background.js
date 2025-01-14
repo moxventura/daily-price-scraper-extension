@@ -1,4 +1,4 @@
-import { getFromStorage, setToStorage } from './storageUtils.js';
+import { getFromStorage, setToStorage, getHashForTracker } from './shared.js';
 
 async function checkAlarmState() {
   const alarm = await chrome.alarms.get("dailyScrape");
@@ -69,26 +69,30 @@ function handleTabUpdate(tabId, tracker) {
 // Save price to storage
 async function saveData(tracker, data) {
   const oldData = await getFromStorage(tracker.id);
-    const oldPrice = oldData?.price;
-    if (oldPrice && oldPrice !== data.price) {
-      console.log(`Price changed for ${tracker.url}: ${oldPrice} -> ${data.price}`);
-      sendNotification("Price Change Detected", `${data.name} price changed from ${oldPrice} to ${data.price}`, tracker.url);
-      oldData.oldPrice = oldPrice; // Update oldPrice only when there is a difference
-    }
+  const oldPrice = oldData?.price;
+  if (oldPrice && oldPrice !== data.price) {
+    console.log(`Price changed for ${tracker.url}: ${oldPrice} -> ${data.price}`);
+    sendNotification("Price Change Detected", `${data.name} price changed from ${oldPrice} to ${data.price}`, tracker.url);
+    oldData.oldPrice = oldPrice; // Update oldPrice only when there is a difference
+  }
 
-    const oldPromotion = oldData?.promotion;
-    if (data.promotion && oldPromotion !== data.promotion) {
-      console.log(`Promotion changed for ${tracker.url}: ${oldPromotion} -> ${data.promotion}`);
-      sendNotification("Promotion Detected", `${data.name} promotion found: ${data.promotion}`, tracker.url);
-    }
-    // Update the trackers with the new price information
-    let newData = { ...oldData, ...data };
-    newData.lastScraped = new Date().toISOString().split("T")[0]
-    newData.url = tracker.url;
+  const oldPromotion = oldData?.promotion;
+  if (data.promotion && oldPromotion !== data.promotion) {
+    console.log(`Promotion changed for ${tracker.url}: ${oldPromotion} -> ${data.promotion}`);
+    sendNotification("Promotion Detected", `${data.name} promotion found: ${data.promotion}`, tracker.url);
+  }
+  // Update the trackers with the new price information
+  let newData = { ...oldData, ...data };
+  newData.lastScraped = new Date().toISOString().split("T")[0]
+  newData.url = tracker.url;
 
-    // Save the data to storage
-    await setToStorage(tracker.id, newData);
-    chrome.runtime.sendMessage({ action: 'scrapeComplete' });
+  // Save the data to storage
+  await setToStorage(tracker.id, newData);
+  chrome.runtime.sendMessage({ action: 'scrapeComplete' }, () => {
+    if (chrome.runtime.lastError) {
+      // Ignore errors when the popup is not open
+    }
+  });
 }
 
 async function sendNotification(title, message, url) {
@@ -113,15 +117,6 @@ async function sendNotification(title, message, url) {
   });
 }
 
-//djb2 hash function
-function generateHash(str) {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
-  }
-  return hash >>> 0;
-}
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'forceScrape') {
     scrapeData(true);
@@ -134,8 +129,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (!Array.isArray(trackers)) {
         trackers = [];
       }
-      const uniqueString = `${newSelector.url}${newSelector.name}${newSelector.price}${newSelector.decimal}${newSelector.promotion}`;
-      const trackerId = generateHash(uniqueString);
+      const trackerId = getHashForTracker(newSelector);
       // Add the new selector to the trackers array
       trackers.push({
         id: `tracker-${trackerId}`,
@@ -153,5 +147,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     });
     return true; // Indicates that the response will be sent asynchronously
+  }
+  if (message.action === 'scrape') {
+    scrapeData().then(() => {
+      ;
+      sendResponse({ success: true });
+    });
   }
 });

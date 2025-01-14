@@ -1,4 +1,4 @@
-import { getFromStorage } from './storageUtils.js';
+import { getFromStorage } from './shared.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("priceTableBody");
@@ -88,6 +88,8 @@ function removeSelector(index) {
   chrome.storage.local.get({ trackers: [] }, (result) => {
     let trackers = result.trackers;
     if (Array.isArray(trackers)) {
+      console.log(trackers);
+      console.log("Removing selector at index: ", index);
       let tracker = trackers.splice(index, 1); // Remove the selector at the specified index
       chrome.storage.local.remove(tracker[0].id); // Remove the data associated with the selector
       chrome.storage.local.set({ trackers }, () => {

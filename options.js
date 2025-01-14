@@ -1,3 +1,5 @@
+import { getHashForTracker } from "./shared.js";
+
 const fileInput = document.getElementById('fileInput');
 const importBtn = document.getElementById('importBtn');
 const exportBtn = document.getElementById('exportBtn');
@@ -17,17 +19,42 @@ const schema = {
       promotion: { type: "string" },
       category: { type: "string" },
     },
-    required: ["id", "url"],
+    required: ["url"],
     additionalProperties: false,
   },
 };
 
 // Validate JSON against schema
 function validateJson(data, schema) {
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
-  const valid = validate(data);
-  return valid ? { valid: true } : { valid: false, error: ajv.errorsText(validate.errors) };
+
+  if (!Array.isArray(data)) {
+    return { valid: false, error: "Data should be an array." };
+  }
+
+  for (const item of data) {
+    if (typeof item !== "object") {
+      return { valid: false, error: "Each item should be an object." };
+    }
+
+    for (const key of Object.keys(item)) {
+      if (!schema.items.properties[key]) {
+        return { valid: false, error: `Invalid key: ${key}` };
+      }
+
+      if (typeof item[key] !== schema.items.properties[key].type) {
+        return { valid: false, error: `Invalid type for key: ${key}` };
+      }
+    }
+
+    for (const key of schema.items.required) {
+      if (!item[key]) {
+        return { valid: false, error: `Missing required key: ${key}` };
+      }
+    }
+  }
+
+  return { valid: true };
+
 }
 
 // Handle Import
@@ -49,21 +76,33 @@ fileInput.addEventListener('change', () => {
         alert(`Invalid JSON: ${validation.error}`);
         return;
       }
-
+      // Loop through the merged data and add an id if there is none
+      for (let i = 0; i < newData.length; i++) {
+        if (!newData[i].id) {
+          newData[i].id = getHashForTracker(newData[i]);
+        }
+      }
       // Merge with existing data
       chrome.storage.local.get(['trackers'], (result) => {
         const existingData = result.trackers || [];
-        const mergedData = [...existingData, ...newData];
+        const uniqueData = [...newData, ...existingData].filter((value, index, self) => {
+          return self.findIndex((t) => t.id === value.id) === index;
+        });
 
-        chrome.storage.local.set({ trackers: mergedData }, () => {
+        console.log("uniqueData with ID", uniqueData);
+
+        chrome.storage.local.set({ trackers: uniqueData }, () => {
           alert('Data imported and merged successfully!');
+          chrome.runtime.sendMessage({ action: 'scrape' });
         });
       });
     } catch (e) {
       alert('Invalid JSON file format.');
+      console.log(e);
     }
   };
   reader.readAsText(file);
+  fileInput.value = '';
 });
 
 // Handle Export
