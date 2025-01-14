@@ -33,6 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="icon bin-icon" data-index="${index}"><i class="fas fa-trash-alt"></i></span>
           </td>
         `;
+        // Add click event listener to the row
+        row.addEventListener('click', (event) => {
+          // Check if the clicked element is not the bin icon
+          if (!event.target.closest('.bin-icon')) {
+            chrome.tabs.create({ url: tracker.url });
+          }
+        });
       }
 
       // Add event listeners to bin icons after updating the table
