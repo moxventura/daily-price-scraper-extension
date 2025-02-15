@@ -1,50 +1,67 @@
 import { getFromStorage } from './shared.js';
+let tableData = [];
+
+let table = new DataTable('#priceTable', { 
+  lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'All']],
+  pageLength: 5,
+  hover: true,
+  language: {
+    lengthMenu: 'Show _MENU_',
+  },
+  columns: [ 
+    { label: 'Name', 
+      className: 'nowrap',
+      render: function(data, type, row) {
+        return `<a href=${row.url}><img src="${row.faviconUrl}" class="favicon" alt="Favicon"><span>${row.scrapedName}</span></a>`;
+      }
+    }, 
+    { label: 'Old Price', data: 'oldPrice', render: $.fn.dataTable.render.number( '.', ',', 2, '€ ' ) }, 
+    { label: 'Price', data: 'scrapedPrice', render: $.fn.dataTable.render.number( '.', ',', 2, '€ ' ) }, 
+    { label: 'Promotion', data: 'scrapedPromotion' }, 
+    { label: 'Actions', 
+      className: 'nowrap',
+      render: function(data, type, row) { 
+        return `
+          <div class="table-button-container">
+            <!--
+            <div class="edit-button" data-tracker-id="${row.trackerId}">
+              <i class="fa fa-edit"></i>
+            </div>
+            !-->
+            <div class="delete-button" data-tracker-id="${row.trackerId}">
+              <i class="fa fa-trash"></i>
+            </div>
+          </div>
+        `; 
+      }
+    } 
+  ],
+  data: tableData, 
+  drawCallback: function() {
+    // Get the buttons
+    const editButtons = document.querySelectorAll('.edit-button');
+    const deleteButtons = document.querySelectorAll('.delete-button');
+
+    // Attach event listeners to the buttons
+    editButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const trackerId = button.dataset.trackerId;
+        editRow(trackerId);
+      });
+    });
+
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const trackerId = button.dataset.trackerId;
+        deleteRow(trackerId);
+      });
+    });
+  }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("priceTableBody");
   const forceScrapeButton = document.getElementById("forceScrape");
-
-  // Fetch and display price data
-  function updateTable() {
-    chrome.storage.local.get(["trackers"], async (data) => {
-      const trackers = data.trackers || [];
-
-      for (const [index, tracker] of trackers.entries()) {
-        console.log("adding row for tracker: ", tracker.url);
-        let row = tableBody.querySelector(`tr:nth-child(${index + 1})`);
-        if (!row) {
-          row = document.createElement("tr");
-          tableBody.appendChild(row);
-        }
-
-        const faviconUrl = new URL(tracker.url).origin + '/favicon.ico';
-
-        const scrapeData = await getFromStorage(tracker.id);
-        row.innerHTML = `
-          <td class="name-column">
-            <img src="${faviconUrl}" class="favicon" alt="Favicon">
-            <span>${scrapeData.name || tracker.url}</span>
-          </td>
-          <td>${scrapeData.oldPrice || "N/A"}</td>
-          <td>${scrapeData.price || ""}</td>
-          <td>${scrapeData.promotion || ""}</td>
-          <td> 
-            <span class="icon bin-icon" data-index="${index}"><i class="fas fa-trash-alt"></i></span>
-          </td>
-        `;
-        // Add click event listener to the row
-        row.addEventListener('click', (event) => {
-          // Check if the clicked element is not the bin icon
-          if (!event.target.closest('.bin-icon')) {
-            chrome.tabs.create({ url: tracker.url });
-          }
-        });
-      }
-
-      // Add event listeners to bin icons after updating the table
-      addBinIconEventListeners();
-    });
-  }
 
   // Initial table update
   updateTable();
@@ -73,28 +90,36 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Function to add event listeners to bin icons
-function addBinIconEventListeners() {
-  document.querySelectorAll('.bin-icon').forEach(binIcon => {
-    binIcon.addEventListener('click', (event) => {
-      console.log('Remove selector:', event.target.closest('.bin-icon').getAttribute('data-index'));
-      const index = event.target.closest('.bin-icon').getAttribute('data-index');
-      removeSelector(index);
-    });
+// Fetch and display price data
+function updateTable() {
+  chrome.storage.local.get(["trackers"], async (data) => {
+    const trackers = data.trackers || [];
+    tableData = await Promise.all(trackers.map(async tracker => {
+      const scrapeData = await getFromStorage(tracker.id);
+      return {
+        scrapedName: scrapeData.name || tracker.url,
+        oldPrice: scrapeData.oldPrice || "N/A",
+        scrapedPrice: scrapeData.price || "",
+        scrapedPromotion: scrapeData.promotion || "",
+        faviconUrl: new URL(tracker.url).origin + '/favicon.ico',
+        trackerId: tracker.id,
+      }
+    }))
+    table.clear();
+    table.rows.add(tableData);
+    table.draw();
   });
+}  
+
+
+function editRow(trackerId) {
 }
 
-function removeSelector(index) {
-  chrome.storage.local.get({ trackers: [] }, (result) => {
-    let trackers = result.trackers;
-    if (Array.isArray(trackers)) {
-      console.log(trackers);
-      console.log("Removing selector at index: ", index);
-      let tracker = trackers.splice(index, 1); // Remove the selector at the specified index
-      chrome.storage.local.remove(tracker[0].id); // Remove the data associated with the selector
-      chrome.storage.local.set({ trackers }, () => {
-        location.reload(); // Reload the table
-      });
-    }
+function deleteRow(trackerId) {
+  chrome.storage.local.get(["trackers"], async (data) => {
+    const trackers = data.trackers || [];
+    const newTrackers = trackers.filter(tracker => tracker.id !== trackerId);
+    await chrome.storage.local.set({ trackers: newTrackers });
+    updateTable();
   });
 }

@@ -13,50 +13,48 @@ body {
     color: #333;
   }
 
-  table {
+  .dataTable {
     width: 100%;
+    min-width: 45em;
     border-collapse: collapse;
-    margin: 20px 0;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-spacing: 0;
   }
 
-  th,
-  td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+  .nowrap {
+    white-space: nowrap;
   }
 
-  th {
-    background-color: #007bff;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+  .dt-search {
+    float: left;
   }
 
-  tr:hover {
-    background-color: #f1f1f1;
+  .dt-length {
+    float: right;
   }
-
-  .action-icons {
+   
+  .table-button-container {
     display: flex;
-    align-items: center;
-    justify-content: center;
   }
-
-  .icon {
+  
+  .edit-button, .delete-button {
     cursor: pointer;
-    font-size: 18px;
-    margin: 0 5px;
+    margin-right: 10px;
   }
 
-  .bin-icon {
-    color: red;
+  .delete-button {
+    color: #ff9800;
+  }
+  
+  .delete-button:hover {
+    color: #f57c00;
   }
 
-  .edit-icon {
-    color: blue;
+  .edit-button {
+    color: #007bff;
+  }
+
+  .edit-button:hover {
+    color: #0056b3;
   }
 
   .button-container {
@@ -82,11 +80,6 @@ body {
     background-color: #0056b3;
   }
 
-  .name-column {
-    min-width: 200px;
-    /* Set a minimum width */
-  }
-
   .favicon {
     width: 16px;
     height: 16px;
@@ -98,11 +91,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background-color: #f9f9f9;
-    border-top: 1px solid #ddd;
-    position: sticky;
     top: 0;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
   }
 
   button.scrape {
