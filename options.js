@@ -132,3 +132,17 @@ clearBtn.addEventListener('click', () => {
     });
   }
 });
+
+chrome.storage.local.get(['settings'], (result) => {
+  const settings = result.settings || {};
+  document.getElementById('batchSize').value = settings.batchSize || 3;
+});
+
+//listen all input fields for changes except file input
+document.querySelectorAll('input:not(#fileInput)').forEach((input) => {
+  input.addEventListener('change', () => {
+    const settings = {};
+    settings[input.id] = input.value;
+    chrome.storage.local.set({ settings });
+  });
+});
