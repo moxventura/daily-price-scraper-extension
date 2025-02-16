@@ -14,24 +14,24 @@
     "https://*/*"
   ],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "src/background.js",
     "type": "module"
   },
   "icons": {
-    "16": "icon16x16.png",
-    "32": "icon32x32.png",
-    "48": "icon48x48.png",
-    "128": "icon128x128.png",
-    "256": "icon256x256.png"
+    "16": "images/icon/icon16x16.png",
+    "32": "images/icon/icon32x32.png",
+    "48": "images/icon/icon48x48.png",
+    "128": "images/icon/icon128x128.png",
+    "256": "images/icon/icon256x256.png"
   },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon16x16.png",
-      "32": "icon32x32.png",
-      "48": "icon48x48.png",
-      "128": "icon128x128.png",
-      "256": "icon256x256.png"
+      "16": "images/icon/icon16x16.png",
+      "32": "images/icon/icon32x32.png",
+      "48": "images/icon/icon48x48.png",
+      "128": "images/icon/icon128x128.png",
+      "256": "images/icon/icon256x256.png"
     },
     "default_title": "Daily Price Scraper"
   },

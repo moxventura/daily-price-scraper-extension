@@ -5,147 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Price Scraper Settings</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #fff;
-      width: 100%;
-      max-width: 400px;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 1.6rem;
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    .setting {
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    label {
-      font-size: 1rem;
-      color: #333;
-      flex: 1;
-      text-align: left;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    .file-label {
-      box-sizing: border-box;
-      max-width: 150px;
-      padding: 8px 15px;
-      background-color: #007BFF;
-      border: none;
-      border-radius: 4px;
-      color: white;
-      cursor: pointer;
-      text-align: center;
-      font-size: 1rem;
-      transition: background-color 0.3s ease;
-    }
-
-    .file-label:hover {
-      background-color: #0056b3;
-    }
-
-    .file-label:active {
-      background-color: #003f7f;
-    }
-
-    input,
-    button {
-      box-sizing: border-box;
-      padding: 8px 15px;
-      font-size: 1rem;
-      width: 150px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-
-    button {
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    button:active {
-      background-color: #003f7f;
-    }
-
-    .clear-btn {
-      background-color: #FF4B4B;
-    }
-
-    .clear-btn:hover {
-      background-color: #c13333;
-    }
-
-    .clear-btn:active {
-      background-color: #9b2828;
-    }
-    /* Tooltip container */
-    .tooltip {
-      position: relative;
-      display: inline-block;
-      border-bottom: 1px dotted black;
-    }
-
-    /* Tooltip text */
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 120px;
-      background-color: black;
-      color: #fff;
-      text-align: center;
-      padding: 5px 0;
-      border-radius: 6px;
-    
-      /* Position the tooltip text - see examples below! */
-      position: absolute;
-      z-index: 1;
-      top: -5px;
-      right: 105%;
-    }
-
-    /* Show the tooltip text when you mouse over the tooltip container */
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-    }
-  </style>
+  <link rel="stylesheet" href="css/options.css">
 </head>
 
 <body>
 
   <div class="container">
     <div style="text-align: center;">
-      <img src="icon.png" width="128" height="128" alt="Icon">
+      <img src="images/icon/icon.png" width="128" height="128" alt="Icon">
     </div>
     <h1>Daily Price Scraper Settings</h1>
     
@@ -179,7 +46,7 @@
     </div>
   </div>
 
-  <script type="module" src="options.js"></script>
+  <script type="module" src="src/options.js"></script>
 </body>
 
 </html>
