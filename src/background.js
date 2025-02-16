@@ -77,7 +77,7 @@ function handleTabUpdate(tabId, tracker) {
       if (tabIdUpdated === tabId && changeInfo.status === "complete") {
         chrome.scripting.executeScript({
           target: { tabId: tabId },
-          files: ['content.js']
+          files: ['src/contentScraper.js']
         }, () => {
           chrome.tabs.sendMessage(tabId, { action: "scrape", config: tracker }, (response) => {
             if (response?.data) {

@@ -60,7 +60,6 @@ let table = new DataTable('#priceTable', {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const tableBody = document.getElementById("priceTableBody");
   const forceScrapeButton = document.getElementById("forceScrape");
 
   // Initial table update
@@ -82,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
-        files: ['selectionScript.js']
+        files: ['src/selectionScript.js']
       }, () => {
         window.close();
       });
